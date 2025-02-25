@@ -1,0 +1,85 @@
+import random
+import time
+
+# Constants
+GRID_SIZE = 5
+EMPTY, BANANA, MONKEY1, MONKEY2, OBSTACLE, TOOL = 0, 1, 2, 3, 4, 5
+
+# Initialize the grid
+def initialize_multi_agent_environment():
+    grid = [[EMPTY for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
+    # Place banana
+    bx, by = random.randint(0, GRID_SIZE - 1), random.randint(0, GRID_SIZE - 1)
+    grid[bx][by] = BANANA
+    # Place monkeys
+    m1x, m1y = 0, 0
+    m2x, m2y = 0, 1
+    grid[m1x][m1y] = MONKEY1
+    grid[m2x][m2y] = MONKEY2
+    # Place obstacles
+    for _ in range(3):
+        ox, oy = random.randint(0, GRID_SIZE - 1), random.randint(0, GRID_SIZE - 1)
+        if grid[ox][oy] == EMPTY:
+            grid[ox][oy] = OBSTACLE
+    return grid, (m1x, m1y), (m2x, m2y), (bx, by)
+
+# Move monkey
+def move_monkey(grid, current, goal):
+    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Up, Down, Left, Right
+    best_move = None
+    best_dist = float('inf')
+    for dx, dy in directions:
+        nx, ny = current[0] + dx, current[1] + dy
+        if 0 <= nx < GRID_SIZE and 0 <= ny < GRID_SIZE:
+            if grid[nx][ny] in {EMPTY, BANANA}:
+                dist = abs(goal[0] - nx) + abs(goal[1] - ny)
+                if dist < best_dist:
+                    best_dist = dist
+                    best_move = (nx, ny)
+    return best_move
+
+# Function to display the grid
+def display_grid(grid):
+    # Use a dictionary to represent the grid elements
+    representation = {EMPTY: ".", BANANA: "B", MONKEY1: "M1", MONKEY2: "M2", OBSTACLE: "O", TOOL: "T"}
+    
+    for row in grid:
+        print(" ".join(representation[cell] for cell in row))
+    print()
+
+# Multi-agent simulation
+def multi_agent_simulation():
+    grid, m1_pos, m2_pos, banana_pos = initialize_multi_agent_environment()
+    print("Initial Environment:")
+    display_grid(grid)
+    
+    while True:
+        # Monkey 1 move
+        new_m1_pos = move_monkey(grid, m1_pos, banana_pos)
+        if new_m1_pos:
+            grid[m1_pos[0]][m1_pos[1]] = EMPTY
+            m1_pos = new_m1_pos
+            grid[m1_pos[0]][m1_pos[1]] = MONKEY1
+        
+        # Check if Monkey 1 wins
+        if m1_pos == banana_pos:
+            print("Monkey 1 wins!")
+            break
+        
+        # Monkey 2 move
+        new_m2_pos = move_monkey(grid, m2_pos, banana_pos)
+        if new_m2_pos:
+            grid[m2_pos[0]][m2_pos[1]] = EMPTY
+            m2_pos = new_m2_pos
+            grid[m2_pos[0]][m2_pos[1]] = MONKEY2
+        
+        # Check if Monkey 2 wins
+        if m2_pos == banana_pos:
+            print("Monkey 2 wins!")
+            break
+        
+        # Display grid
+        display_grid(grid)
+        time.sleep(1)
+
+multi_agent_simulation()

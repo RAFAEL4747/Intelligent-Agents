@@ -1,0 +1,25 @@
+class WaterJugProblem:
+    def __init__(self, cap_x, cap_y, goal):
+        self.cap_x, self.cap_y, self.goal, self.visited = cap_x, cap_y, goal, set()
+
+    def get_moves(self, x, y):
+        return [
+            (self.cap_x, y), (x, self.cap_y), (0, y), (x, 0),
+            (x - min(x, self.cap_y - y), y + min(x, self.cap_y - y)),
+            (x + min(y, self.cap_x - x), y - min(y, self.cap_x - x))
+        ]
+
+    def solve(self, state):
+        stack = [(state, [state])]
+        while stack:
+            (x, y), path = stack.pop()
+            if len(path) == 8 and (x == self.goal or y == self.goal):
+                return path
+            if len(path) < 8 and (x, y) not in self.visited:
+                self.visited.add((x, y))
+                stack.extend((move, path + [move]) for move in self.get_moves(x, y))
+        return None
+
+if __name__ == "__main__":
+    solution = WaterJugProblem(3, 5, 4).solve((0, 0))
+    print("\n".join(map(str, solution)) if solution else "No solution in 8 steps.")
